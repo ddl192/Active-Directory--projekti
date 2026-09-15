@@ -5,8 +5,6 @@ Rakensin Windows Server 2025 -toimialueen (Active Directory) ja liitin siihen Wi
 levykiintiöt, Group Policyn, IIS:n ja tulostuspalvelut. Käyttäjien luonti on automatisoitu
 PowerShellillä, ja Windows 11 -asennus tehdään automaattisesti (unattended).
 
-Tutkinnon osa: Järjestelmätuessa toimiminen (106425, 45 osp).
-
 ## Ympäristö
 
 VMware ESXi 6.7 (hallinta 192.168.1.50, vSwitch0). Sisäverkkona on `LAB-Internal` -port group.
@@ -17,6 +15,7 @@ VMware ESXi 6.7 (hallinta 192.168.1.50, vSwitch0). Sisäverkkona on `LAB-Interna
 | WIN-N3D85T4RMA0 | Windows 11 Pro | Toimialuetyöasema |
 
 ## Verkko
+<img width="963" height="661" alt="Screenshot (284)~2" src="https://github.com/user-attachments/assets/8d01735a-a508-49ce-8923-74ea2972c65b" />
 
 Palvelimessa kaksi verkkokorttia: NIC1 ulkoiseen labran verkkoon, NIC2 eristettyyn
 `LAB-Internal` -toimialueverkkoon. Sisäisellä rajapinnalla ei ole yhdyskäytävää, joten
@@ -32,7 +31,7 @@ Yhteys testattiin molempiin suuntiin `ping`-komennolla.
 
 ## Palvelin, AD DS ja DNS
 
-Asensin Windows Server 2025:n, nimesin sen DC01:ksi, määritin kiinteän sisäisen IP:n ja
+Asensin Windows Server 2025:n, määritin kiinteän sisäisen IP:n ja
 päivitykset, minkä jälkeen lisäsin AD DS -roolin ja ylensin koneen toimialueen ohjauskoneeksi.
 
 - Toimialue lab.local, NetBIOS LAB, ohjauskone DC01.lab.local
@@ -48,11 +47,12 @@ ping DC01.lab.local
 Otin tilannevedokset (snapshot) molemmista virtuaalikoneista ennen jatkamista.
 
 ## OU:t, käyttäjät ja ryhmät
+<img width="759" height="712" alt="Screenshot (286)~2" src="https://github.com/user-attachments/assets/76a884e1-bf26-45a9-a6b4-66281305f083" />
 
 OU:t käyttäjille, ryhmille, työasemille ja palvelimille, ja siirsin objektit niihin.
 
 - user1 - luotu käsin, käytetty testaukseen
-- student1, student2 - luotu PowerShellillä
+- student1- luotu PowerShellillä
 - Turvaryhmä IT käyttöoikeuksien keskitettyyn hallintaan - varmennettu komennolla
   `whoami /groups` → `LAB\IT`
 
@@ -92,9 +92,12 @@ whoami /groups
 
 ## DHCP
 
+<img width="1031" height="993" alt="Screenshot (288)~2" src="https://github.com/user-attachments/assets/8b014abb-2018-4c75-bd03-e631b0d794ed" />
+
 Asensin ja valtuutin DHCP-roolin, loin IPv4-scopen verkolle 192.168.100.0/24 ja määritin DNS-
 (192.168.100.1) ja toimialue- (lab.local) optiot. Windows 11 sai osoitteen automaattisesti
 (`ipconfig`). DC01 pysyy kiinteästi osoitteessa 192.168.100.1.
+<img width="1022" height="774" alt="Screenshot (216)~2" src="https://github.com/user-attachments/assets/f1dfdcf6-d8cc-4850-a0b3-530b0a74670f" />
 
 ## Tiedostopalvelut (jaot, kotikansiot, login-skripti)
 
@@ -124,6 +127,7 @@ jotka ylittävät kiintiönsä". Tarkistin käytön Kiintiömerkinnöistä (Quot
 käyttäjän H:-levyllä - käyttö seurataan ja rajataan palvelimella.
 
 ## Group Policy
+<img width="1920" height="1080" alt="Screenshot (289)" src="https://github.com/user-attachments/assets/05cbddab-0da5-4562-a11a-6089fab1c969" />
 
 GPO:t luotu ja linkitetty OU-rakenteeseen. Sovellettu ja varmennettu komennoilla
 `gpupdate /force` + `gpresult /r`:
@@ -136,6 +140,8 @@ GPO:t luotu ja linkitetty OU-rakenteeseen. Sovellettu ja varmennettu komennoilla
 
 ## IIS-web-palvelin
 
+<img width="1029" height="739" alt="Screenshot (291)~2" src="https://github.com/user-attachments/assets/5f6f6fab-d360-4182-9c4a-dec3c0e5eba8" />
+
 Asensin IIS:n, otin Default Web Siten käyttöön ja lisäsin `index.html`-testisivun. Latautui
 onnistuneesti Windows 11:ltä osoitteesta http://192.168.100.1.
 
@@ -145,6 +151,8 @@ Asensin Print and Document Services -roolin, lisäsin jaetun tulostimen, julkais
 toimialueeseen ja yhdistin sen Windows 11 -työasemalta.
 
 ## Windows 11:n automaattinen asennus
+<img width="1089" height="783" alt="Screenshot (262)~2" src="https://github.com/user-attachments/assets/71414caf-4fd9-4b97-8068-97db8a915585" />
+
 
 Tein `autounattend.xml`-vastaustiedoston (Windows SIM / ADK) ja loin siitä ISO-levyn:
 
@@ -155,8 +163,10 @@ oscdimg -m -o -u2 -udfver102 C:\Autounattend C:\autounattend.iso
 ESXi:ssä liitin virtuaalikoneeseen kaksi CD/DVD-asemaa - toisessa Windows 11 -ISO, toisessa
 `autounattend.iso`. Windows Setup tunnisti vastaustiedoston automaattisesti ja asennus eteni
 itsestään.
+<img width="933" height="590" alt="Screenshot (292)~3" src="https://github.com/user-attachments/assets/27588b5e-92a9-4106-99f2-4d25733433a8" />
 
 ## Testaus
+<img width="1048" height="840" alt="Screenshot (264)~2" src="https://github.com/user-attachments/assets/2f4613e8-08b8-413d-b591-398ecb8dd0a4" />
 
 - Verkko - ping molempiin suuntiin, DNS toimii, DHCP jakaa osoitteen
 - AD - toimialuekirjautuminen toimii, `LAB\IT` -jäsenyys varmennettu, toimialueliitos varmennettu
